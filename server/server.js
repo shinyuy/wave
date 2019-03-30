@@ -33,6 +33,25 @@ app.post('/api/users/register',(req, res)=>{
     })
 });
 
+app.post('/api/users/login', (req, res)=>{
+    //Find the email
+    User.findOne({'email': req.body.email},(err, user)=>{
+        if(!user) return res.json({success: false, message:'Auth failed, email not found'});
+ 
+        //Grab the password and check
+        user.comparePassword(req.body.password, (err, isMatch)=>{
+            if(!isMatch) return res.json({success: false, message: 'Wrong Password or Email'});
+            user.generateToken((err, user)=>{
+                if(err) return res.status(400).send(err);
+                res.cookie('w_auth',user.token).status(200).json({loginSuccess: true});
+            })
+        })
+    })
+  
+
+    //Generate a new token
+})
+
 const port = process.env.PORT || 3002;
 
 app.listen(port, ()=>{
